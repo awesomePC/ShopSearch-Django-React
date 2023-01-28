@@ -42,7 +42,53 @@ def search_history(request):
 #according to selected keyword, download images and save data in DB
 @api_view(['GET'])
 def online_items(request):
-    pass
+    # key = "t_856 2094008186"
+    key = request.data['key']
+    # secret = "20230114"
+    secret = request.data['secret']
+    # search_keyword = "dell"
+    search_keyword = request.data['keyword']
+    district = request.data['district']
+    url = f"https://api-gw.onebound.cn/{district}/item_search/?key={key}&secret={secret}&q={search_keyword}&start_price=0&end_price=0&page=1&cat=0&discount_only=&sort =&page_size=&seller_info=&nick=&ppath=&imgid=&filter="
+
+    headers = {
+        "Accept-Encoding": "gzip",
+        "Connection": "close"
+    }
+
+    search_history = SearchHistory.objects.filter(District=district, SearchKeyword=search_keyword).exists()
+    print("history:", search_history)
+    if not search_history:
+        print("no exist")
+        while True:
+            print("start")
+            r = requests.get(url, headers=headers)
+            json_obj = r.json()
+            print(json_obj)
+            if "items" in json_obj.keys():
+                print("true")
+                break
+            time.sleep(1)
+            loop_num += 1
+            if loop_num == 5:
+                break
+        new_search_history = SearchHistory(District=district, SearchKeyword=search_keyword)
+        new_search_history.save()
+        for obj in json_obj['items']["item"]:
+            new_item = Items(District=district, 
+                            SearchKeyword=search_keyword,
+                            Title=obj["title"],
+                            PicUrl=obj["pic_url"],
+                            PromotionPrice=obj["promotion_price"],
+                            Price=obj["price"],
+                            Sales=obj["sales"],
+                            NumIid=obj["num_iid"],
+                            SellerNick=obj["seller_nick"],
+                            SellerID=obj["seller_id"],
+                            DetailUrl=obj["detail_url"],)
+            new_item.save()
+
+    return Response ({"name": "superstar"})
 
 #in offline mode#
 #according to selected keyword retrieve data from DB 
@@ -50,8 +96,6 @@ def online_items(request):
 def offline_items(request):
     if request.method =='GET':
         print(request.data['District'])
-        # print(dict(request.data))
-        # print(request.data.dict()['District'])
         if request.data['SearchKeyword'] == "":
             items = Items.objects.all()
         else:
