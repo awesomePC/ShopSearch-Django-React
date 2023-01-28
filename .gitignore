@@ -1,0 +1,15 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Django stuff:
+db.sqlite3
+
+
+# Environments
+venv/
+
+#json file
+taobao_json/
