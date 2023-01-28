@@ -1,11 +1,8 @@
-from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-# from .serializers import QueueSerializer
-# from .models import Queue
+from .serializers import SearchHistorySerializer, ItemsSerializer
+from .models import SearchHistory, Items
 from rest_framework import status
 
 ###########################
@@ -15,15 +12,40 @@ import os
 import time
 from threading import Thread
 
+# https://api-gw.onebound.cn/taobao/item_search/?key=t_856 2094008186&secret=20230114&q=dell&start_price=0&end_price=0&page=1&cat=0&discount_only=&sort =&page_size=&seller_info=&nick=&ppath=&imgid=&filter="=
+
+
 url = "https://api-gw.onebound.cn/taobao/item_search_shop/?key=t_856 2094008186&&shop_id=57301367&page=1&sort=&&lang=zh-CN&secret=20230114"
 headers = {
     "Accept-Encoding": "gzip",
     "Connection": "close"
 }
 #################################
-@api_view(['GET', 'POST'])
-def download_images(request):
+#retrieve search history for dropdown data in the offline mode first page
+@api_view(['GET'])
+def search_history(request):
+    if request.method =='GET':
+        search_history = SearchHistory.objects.all()
+        serializer = SearchHistorySerializer(search_history, many=True)
+        return Response(serializer.data)
+
+#in online mode#     
+#according to selected keyword, download images and save data in DB
+@api_view(['GET'])
+def online_items(request):
     pass
+
+#in offline mode#
+#according to selected keyword retrieve data from DB 
+@api_view(['GET', 'POST'])
+def offline_items(request):
+    if request.method =='GET':
+        items = Items.objects.filter(District=request.data.id, SearchKeyword=request.data.id)
+        serializer = ItemsSerializer(items, many=True)
+        return Response(serializer.data)
+
+    
+
 # Create your views here.
 @api_view(['GET', 'POST'])
 def all_items(request):
@@ -35,54 +57,54 @@ def all_items(request):
 
     if request.method =='GET':
         print("ok")
-        ################################
-        loop_num = 0
-        while True:
-            print("start")
-            r = requests.get(url, headers=headers)
-            json_obj = r.json()
-            print(json_obj)
-            if "items" in json_obj.keys():
-                print("true")
-                break
-            time.sleep(1)
-            loop_num += 1
-            if loop_num == 5:
-                break
-        #analyse first response to get data including page count...
-        # print(json_obj['items']['page_count'])
-        global page_count, shop_id, district
+        # ################################
+        # loop_num = 0
+        # while True:
+        #     print("start")
+        #     r = requests.get(url, headers=headers)
+        #     json_obj = r.json()
+        #     print(json_obj)
+        #     if "items" in json_obj.keys():
+        #         print("true")
+        #         break
+        #     time.sleep(1)
+        #     loop_num += 1
+        #     if loop_num == 5:
+        #         break
+        # #analyse first response to get data including page count...
+        # # print(json_obj['items']['page_count'])
+        # global page_count, shop_id, district
         
 
-        page = int(json_obj['items']['page'])
-        page_count = int(json_obj['items']['page_count'])
+        # page = int(json_obj['items']['page'])
+        # page_count = int(json_obj['items']['page_count'])
         
-        #analyse url to get neccessary info
-        url_split = url.split("/")
+        # #analyse url to get neccessary info
+        # url_split = url.split("/")
 
-        #district --> example: taobao, 1688, Dangdang...
-        district = url_split[3]+"_json"
+        # #district --> example: taobao, 1688, Dangdang...
+        # district = url_split[3]+"_json"
 
-        #shop id inside district
-        shop_id = url_split[5].split("&&")[1].split("&")[0]
+        # #shop id inside district
+        # shop_id = url_split[5].split("&&")[1].split("&")[0]
 
-        filename = f'{district}/{shop_id}/page_{page}/page.json'
-        isExist = os.path.exists(filename)
+        # filename = f'{district}/{shop_id}/page_{page}/page.json'
+        # isExist = os.path.exists(filename)
 
-        if isExist is False:
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
+        # if isExist is False:
+        #     os.makedirs(os.path.dirname(filename), exist_ok=True)
 
-            with open(f'{district}/{shop_id}/page_{page}/page.json', 'w') as f:
-                json.dump(json_obj, f, indent=4)
+        #     with open(f'{district}/{shop_id}/page_{page}/page.json', 'w') as f:
+        #         json.dump(json_obj, f, indent=4)
 
 
 
-        for item in json_obj['items']['item']:
-            # downloadJson(item, page)
-            # downloadImage(filename,f"{prev}/{filename}")
-            downloadThread = Thread(target=downloadJson, args=(item, page, ))
-            downloadThread.isDaemon = True
-            downloadThread.start()
+        # for item in json_obj['items']['item']:
+        #     # downloadJson(item, page)
+        #     # downloadImage(filename,f"{prev}/{filename}")
+        #     downloadThread = Thread(target=downloadJson, args=(item, page, ))
+        #     downloadThread.isDaemon = True
+        #     downloadThread.start()
 
 
 
