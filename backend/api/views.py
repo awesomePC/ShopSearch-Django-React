@@ -22,12 +22,21 @@ headers = {
 }
 #################################
 #retrieve search history for dropdown data in the offline mode first page
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def search_history(request):
     if request.method =='GET':
         search_history = SearchHistory.objects.all()
         serializer = SearchHistorySerializer(search_history, many=True)
         return Response(serializer.data)
+
+    if request.method =='POST':  
+        print(request.data)
+        print("request.data")
+        serializer = SearchHistorySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response ({"name": "superstar"})
 
 #in online mode#     
 #according to selected keyword, download images and save data in DB
@@ -40,9 +49,21 @@ def online_items(request):
 @api_view(['GET', 'POST'])
 def offline_items(request):
     if request.method =='GET':
-        items = Items.objects.filter(District=request.data.id, SearchKeyword=request.data.id)
+        print(request.data['District'])
+        # print(dict(request.data))
+        # print(request.data.dict()['District'])
+        if request.data['SearchKeyword'] == "":
+            items = Items.objects.all()
+        else:
+            items = Items.objects.filter(District=request.data['District'], SearchKeyword=request.data['SearchKeyword'])
         serializer = ItemsSerializer(items, many=True)
         return Response(serializer.data)
+        # return Response ({"name": "superstar", "data": request.data})
+    if request.method =='POST':
+        serializer = ItemsSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     
 
