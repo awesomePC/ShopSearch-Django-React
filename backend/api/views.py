@@ -182,7 +182,8 @@ def downloadOneImage(image_url):
     #time.sleep(5)
 
 #donwload json
-def receive_json_and_analyse(key, secret, search_keyword, district, page):
+def receive_json_and_analyse(arr_argument):
+    key, secret, search_keyword, district, page = [element for element in arr_argument]
     print('page', page)
 
     url = f"https://api-gw.onebound.cn/{district}/item_search/?key={key}&secret={secret}&q={search_keyword}&start_price=0&end_price=0&page={page}&cat=0&discount_only=&sort =&page_size=&seller_info=&nick=&ppath=&imgid=&filter="
