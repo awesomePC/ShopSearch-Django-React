@@ -13,3 +13,6 @@ venv/
 
 #json file
 taobao_json/
+
+#image file
+images/
