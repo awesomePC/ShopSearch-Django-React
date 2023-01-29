@@ -20,7 +20,8 @@ class Items(models.Model):
     #custom cell
     District=models.CharField(max_length=255, null=True, blank=True)
     SearchKeyword=models.CharField(max_length=255, null=True, blank=True)
-    # Image=models.ImageField(
+    Image=models.CharField(max_length=255, null=True, blank=True)
+    # Image=models.FileField(
     #     upload_to="images",
     #     max_length=500,
     #     null=True, blank=True

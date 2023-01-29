@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,8 +26,14 @@ SECRET_KEY = 'django-insecure-zvw3^@2i0*%ixk1v2u^mfu)r%mxe8@8xtops2d)kl2i2s4l(2=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['43e7-188-43-136-46.jp.ngrok.io', 'localhost']
 
+######################################
+# Actual directory user files go to
+MEDIA_ROOT = os.path.join(os.path.dirname("backend"), 'media')
+
+# URL used to access the media
+MEDIA_URL = '/media/'
 
 # Application definition
 
