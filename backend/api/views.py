@@ -222,9 +222,6 @@ def receive_json_and_analyse(arr_argument):
             if loop_num == 5:
                 break
 
-        new_search_history = SearchHistory(District=district, SearchKeyword=search_keyword)
-        new_search_history.save()
-
         for obj in json_obj['items']["item"]:
             if obj["pic_url"] is None:
                 filename = None
