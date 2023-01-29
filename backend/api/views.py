@@ -14,6 +14,7 @@ import os
 import time
 
 #global variables
+#global variables
 url_list = []
 page_count = 0
 new_search = False
@@ -181,10 +182,7 @@ def downloadOneImage(image_url):
     #time.sleep(5)
 
 #donwload json
-# def receive_json_and_analyse(key, secret, search_keyword, district, page):
-def receive_json_and_analyse(arr_argument):
-    key, secret, search_keyword, district, page = [element for element in arr_argument]
-
+def receive_json_and_analyse(key, secret, search_keyword, district, page):
     print('page', page)
 
     url = f"https://api-gw.onebound.cn/{district}/item_search/?key={key}&secret={secret}&q={search_keyword}&start_price=0&end_price=0&page={page}&cat=0&discount_only=&sort =&page_size=&seller_info=&nick=&ppath=&imgid=&filter="
@@ -222,6 +220,9 @@ def receive_json_and_analyse(arr_argument):
             loop_num += 1
             if loop_num == 5:
                 break
+
+        new_search_history = SearchHistory(District=district, SearchKeyword=search_keyword)
+        new_search_history.save()
 
         for obj in json_obj['items']["item"]:
             if obj["pic_url"] is None:
