@@ -1,0 +1,91 @@
+{
+    "item": {
+        "num_iid": "640834870515",
+        "title": null,
+        "desc_short": "",
+        "price": null,
+        "total_price": "",
+        "suggestive_price": "",
+        "orginal_price": null,
+        "nick": null,
+        "num": 0,
+        "detail_url": "https://item.taobao.com/item.htm?id=640834870515",
+        "pic_url": null,
+        "brand": "",
+        "brandId": "",
+        "rootCatId": "",
+        "cid": 0,
+        "desc": "",
+        "item_imgs": null,
+        "item_weight": "",
+        "post_fee": "",
+        "freight": "",
+        "express_fee": "",
+        "ems_fee": "",
+        "shipping_to": "",
+        "video": [],
+        "sample_id": "",
+        "props_name": "",
+        "prop_imgs": {
+            "prop_img": []
+        },
+        "props_imgs": {
+            "prop_img": []
+        },
+        "property_alias": "",
+        "props": null,
+        "total_sold": "-1",
+        "skus": {
+            "sku": []
+        },
+        "seller_id": null,
+        "sales": null,
+        "shop_id": null,
+        "props_list": [],
+        "seller_info": {
+            "nick": null,
+            "item_score": null,
+            "score_p": null,
+            "delivery_score": null,
+            "shop_type": "",
+            "user_num_id": null,
+            "sid": null,
+            "title": "",
+            "zhuy": null,
+            "cert": null,
+            "open_time": "",
+            "credit_score": null,
+            "shop_name": ""
+        },
+        "tmall": false,
+        "location": null,
+        "data_from": "Ha",
+        "has_discount": "false",
+        "is_promotion": "false",
+        "promo_type": null,
+        "format_check": "fail"
+    },
+    "error": "data error",
+    "translate_status": "",
+    "translate_time": 0,
+    "language": {
+        "default_lang": "cn",
+        "current_lang": "cn"
+    },
+    "reason": "data error \u63a5\u53e3\u6587\u6863\uff1ahttps://open.onebound.cn/help/api/taobao.item_get.html",
+    "error_code": "5000",
+    "cache": 0,
+    "api_info": "today: max:20000 all[=++];expires:2024-01-16",
+    "execution_time": "5.214",
+    "server_time": "Beijing/2023-01-31 04:56:57",
+    "client_ip": "188.43.136.46",
+    "call_args": {
+        "num_iid": "640834870515",
+        "is_promotion": "1"
+    },
+    "api_type": "taobao",
+    "translate_language": "zh-CN",
+    "translate_engine": "baidu",
+    "server_memory": "5.82MB",
+    "last_id": false
+}

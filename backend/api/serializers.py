@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Items, SearchHistory
+from .models import Items, SearchHistory, ItemDetail
 
 class ItemsSerializer(serializers.ModelSerializer):
     # Image = serializers.FileField(max_length=100000,
@@ -12,4 +12,9 @@ class ItemsSerializer(serializers.ModelSerializer):
 class SearchHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SearchHistory
+        fields = '__all__'
+
+class ItemDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ItemDetail
         fields = '__all__'

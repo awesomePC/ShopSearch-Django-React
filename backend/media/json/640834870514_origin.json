@@ -1,0 +1,28 @@
+{
+    "item": {
+        "format_check": "fail"
+    },
+    "error": "data error",
+    "translate_status": "",
+    "translate_time": 0,
+    "language": {
+        "default_lang": "cn",
+        "current_lang": "cn"
+    },
+    "reason": "data error \u63a5\u53e3\u6587\u6863\uff1ahttps://open.onebound.cn/help/api/taobao.item_get.html",
+    "error_code": "5000",
+    "cache": 0,
+    "api_info": "today: max:20000 all[=++];expires:2024-01-16",
+    "execution_time": "5.016",
+    "server_time": "Beijing/2023-01-31 04:57:45",
+    "client_ip": "188.43.136.46",
+    "call_args": {
+        "num_iid": "640834870514",
+        "is_promotion": "1"
+    },
+    "api_type": "taobao",
+    "translate_language": "zh-CN",
+    "translate_engine": "baidu",
+    "server_memory": "0.75MB",
+    "last_id": false
+}

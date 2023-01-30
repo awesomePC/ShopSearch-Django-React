@@ -9,6 +9,7 @@ urlpatterns=[
     path('search-history/', views.search_history),
     path('offline-items/', views.offline_items),
     path('online-items/', views.online_items),
+    path('item-detail/', views.item_detail),
    
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-zvw3^@2i0*%ixk1v2u^mfu)r%mxe8@8xtops2d)kl2i2s4l(2=
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['43e7-188-43-136-46.jp.ngrok.io', 'localhost']
+ALLOWED_HOSTS = ['38a5-188-43-136-46.jp.ngrok.io', 'localhost','192.168.125.74']
 
 ######################################
 # Actual directory user files go to

@@ -1,8 +1,8 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from .serializers import SearchHistorySerializer, ItemsSerializer
-from .models import SearchHistory, Items
+from .serializers import SearchHistorySerializer, ItemsSerializer, ItemDetailSerializer
+from .models import SearchHistory, Items, ItemDetail
 from rest_framework import status
 from rest_framework.permissions import AllowAny
 from django.core import files
@@ -26,7 +26,8 @@ def search_history(request):
     if request.method =='GET':
         search_history = SearchHistory.objects.all()
         serializer = SearchHistorySerializer(search_history, many=True)
-        return Response(serializer.data)
+        # return Response(serializer.data)
+        return Response({"data":serializer.data})
 
     if request.method =='POST':  
         print(request.data)
@@ -45,6 +46,7 @@ def online_items(request):
 
     # items = Items.objects.all()
     # history = SearchHistory.objects.all()
+    # history = SearchHistory.objects.filter(SearchKeyword="men")
     # for i in items:
     #     i.delete()
     # for j in history:
@@ -63,7 +65,7 @@ def online_items(request):
     
     district = request.query_params.get('district')
 
-    global page_count, new_search
+    global page_count, new_search, url_list
     
     arr_argument = []
     arr_argument.append(key)
@@ -74,10 +76,10 @@ def online_items(request):
     receive_json_and_analyse(arr_argument)
     # receive_json_and_analyse(key, secret, search_keyword, district, 1)
 
-    if page_count != 0 and not new_search:
+    if page_count != 0 and new_search:
         print("pagenum", page_count)
         page_list = []
-        for page in range(2,page_count):
+        for page in range(2,page_count+1):
             arr_argument = []
             arr_argument.append(key)
             arr_argument.append(secret)
@@ -86,7 +88,7 @@ def online_items(request):
             arr_argument.append(page)
             page_list.append(arr_argument)
             
-            page_count = receive_json_and_analyse(arr_argument)
+            receive_json_and_analyse(arr_argument)
         
         # from concurrent.futures import ThreadPoolExecutor
         # with ThreadPoolExecutor(max_workers=16) as executor:
@@ -105,6 +107,7 @@ def online_items(request):
     #initialize global variables
     page_count = 0
     new_search = False
+    url_list = []
 
     items = Items.objects.filter(District=district, SearchKeyword=search_keyword).order_by('-id')
     total = items.count()
@@ -155,6 +158,81 @@ def offline_items(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+#get detailed info of individual item
+@api_view(['GET', 'POST'])
+def item_detail(request):
+    if request.method =='GET':
+        global url_list
+        # items = ItemDetail.objects.all()
+        # for i in items:
+        #     i.delete()
+        num_iid = int(request.query_params.get('num_iid'))
+        district = request.query_params.get('district')
+        
+        detail = ItemDetail.objects.filter(NumIid = num_iid, District = district)
+        if detail.exists():
+            serializer = ItemDetailSerializer(detail, many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        else:
+            url = f"https://api-gw.onebound.cn/{district}/item_get/?key=t_856 2094008186&&num_iid={num_iid}&is_promotion=1&&lang=zh-CN&secret=20230114&cache=no"
+            headers = {
+                "Accept-Encoding": "gzip",
+                "Connection": "close"
+            }
+            r = requests.get(url, headers=headers)
+            json_obj = r.json()
+            with open(f"media/json/{num_iid}_origin.json", 'w') as f:
+                json.dump(json_obj, f, indent=4)
+
+            json_obj = get_img_and_change_imgurl(json_obj['item'])
+
+            filename = f"media/json/{num_iid}.json"
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+            with open(f"media/json/{num_iid}.json", 'w') as f:
+                json.dump(json_obj, f, indent=4)
+
+            # Adding information about user agent
+            opener=urllib.request.build_opener()
+            opener.addheaders=[('User-Agent','Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1941.0 Safari/537.36')]
+            urllib.request.install_opener(opener)
+
+            from concurrent.futures import ThreadPoolExecutor
+            with ThreadPoolExecutor(max_workers=16) as executor:
+            #executor.map(downloadImage, url_list) #urls=[list of url]
+                executor.map(downloadOneImage, url_list) #urls=[list of url]
+
+            new_detail = ItemDetail(District=district, NumIid=num_iid, JsonPath = filename)
+            new_detail.save()
+            url_list = []
+            detail = ItemDetail.objects.filter(NumIid = num_iid)
+            serializer = ItemDetailSerializer(detail, many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+def get_img_and_change_imgurl(json_data):
+    json_data = json_data
+    addDownloadUrl(json_data['pic_url'])
+    json_data['pic_url'] = localPathFrom(json_data['pic_url'])
+
+    for i, row in enumerate(json_data["desc_img"]):
+        addDownloadUrl(row)
+        json_data["desc_img"][i] = localPathFrom(row)
+
+    for row in json_data["item_imgs"]:
+        addDownloadUrl(row['url'])
+        row['url'] = localPathFrom(row['url'])
+
+    for row in json_data["prop_imgs"]["prop_img"]:
+        addDownloadUrl(row['url'])
+        row['url'] = localPathFrom(row['url'])
+
+    for row in json_data["props_imgs"]["prop_img"]:
+        addDownloadUrl(row['url'])
+        row['url'] = localPathFrom(row['url'])
+
+    return json_data    
+
 def localPathFrom(url):
     urlForDic = url.split("//")[1]
     folder, fn = os.path.split(urlForDic)
@@ -172,6 +250,7 @@ def addDownloadUrl(url):
     if isExist is False:
         global url_list
         url_list.append(pic_url)
+    
 
 def downloadOneImage(image_url):
     print(image_url)
@@ -204,6 +283,7 @@ def receive_json_and_analyse(arr_argument):
 
     if new_search:
         print("no exist")
+        loop_num = 0
         while True:
             print("start")
             r = requests.get(url, headers=headers)
@@ -221,51 +301,51 @@ def receive_json_and_analyse(arr_argument):
             loop_num += 1
             if loop_num == 5:
                 break
+        if "items" in json_obj.keys():
+            for obj in json_obj['items']["item"]:
+                if obj["pic_url"] is None:
+                    filename = None
+                else:
+                    addDownloadUrl(obj["pic_url"])
+                    pic_url = obj["pic_url"]
+                    if 'http' not in pic_url:
+                        pic_url = f"http:{pic_url}"
+                    print("pic_url", pic_url)
+                    filename = localPathFrom(pic_url)
+                    print("filename", filename)
 
-        for obj in json_obj['items']["item"]:
-            if obj["pic_url"] is None:
-                filename = None
-            else:
-                addDownloadUrl(obj["pic_url"])
-                pic_url = obj["pic_url"]
-                if 'http' not in pic_url:
-                    pic_url = f"http:{pic_url}"
-                print("pic_url", pic_url)
-                filename = localPathFrom(pic_url)
-                print("filename", filename)
-
-            new_item = Items(District=district, 
-                            SearchKeyword=search_keyword,
-                            Title=obj["title"],
-                            PicUrl=obj["pic_url"],
-                            PromotionPrice=obj["promotion_price"],
-                            Image=filename,
-                            Price=obj["price"],
-                            Sales=obj["sales"],
-                            NumIid=obj["num_iid"],
-                            SellerNick=obj["seller_nick"],
-                            SellerID=obj["seller_id"],
-                            DetailUrl=obj["detail_url"],)
-            new_item.save()
-    
-            # from django.core import files
-            # from io import BytesIO
-            # import requests
-            # pic_url = obj["pic_url"]
-            # if 'http' not in pic_url:
-            #     pic_url = f"http:{pic_url}"
-                
-            # urlForDic = pic_url.split("//")[1]
-            # img_filename = urlForDic.split("/")[3]
-            # # url = "https://example.com/image.jpg"
-            # resp = requests.get(pic_url)
-            # if resp.status_code != requests.codes.ok:
-            #     #  Error handling here
-            #     pass
-            # else:
-            #     fp = BytesIO()
-            #     fp.write(resp.content)
-            #     # file_name = url.split("/")[-1]  # There's probably a better way of doing this but this is just a quick example
-            #     new_item.Image.save(img_filename, files.File(fp))
-            # time.sleep(2)
+                new_item = Items(District=district, 
+                                SearchKeyword=search_keyword,
+                                Title=obj["title"],
+                                PicUrl=obj["pic_url"],
+                                PromotionPrice=obj["promotion_price"],
+                                Image=filename,
+                                Price=obj["price"],
+                                Sales=obj["sales"],
+                                NumIid=obj["num_iid"],
+                                SellerNick=obj["seller_nick"],
+                                SellerID=obj["seller_id"],
+                                DetailUrl=obj["detail_url"],)
+                new_item.save()
+        
+                # from django.core import files
+                # from io import BytesIO
+                # import requests
+                # pic_url = obj["pic_url"]
+                # if 'http' not in pic_url:
+                #     pic_url = f"http:{pic_url}"
+                    
+                # urlForDic = pic_url.split("//")[1]
+                # img_filename = urlForDic.split("/")[3]
+                # # url = "https://example.com/image.jpg"
+                # resp = requests.get(pic_url)
+                # if resp.status_code != requests.codes.ok:
+                #     #  Error handling here
+                #     pass
+                # else:
+                #     fp = BytesIO()
+                #     fp.write(resp.content)
+                #     # file_name = url.split("/")[-1]  # There's probably a better way of doing this but this is just a quick example
+                #     new_item.Image.save(img_filename, files.File(fp))
+                # time.sleep(2)
 

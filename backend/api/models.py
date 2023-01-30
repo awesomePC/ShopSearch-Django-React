@@ -44,3 +44,8 @@ class Items(models.Model):
 class SearchHistory(models.Model):
     District=models.CharField(max_length=255, null=True, blank=True)
     SearchKeyword=models.CharField(max_length=255, null=True, blank=True)
+
+class ItemDetail(models.Model):
+    District=models.CharField(max_length=255, null=True, blank=True)
+    NumIid=models.CharField(max_length=255, null=True, blank=True)
+    JsonPath=models.CharField(max_length=255, null=True, blank=True)
