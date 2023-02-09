@@ -9,7 +9,7 @@ The purpose of the project is:
 ## Backend routes
 
 * GET `/api/search-history/`
- users get all search history
+ users get all product names from search history all users have done so far
         
 * GET `/api/offline-items/`
  Users can look at downloaded product detailed info in offline mode  
